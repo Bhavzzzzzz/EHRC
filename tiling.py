@@ -5,7 +5,7 @@ import numpy as np
 import tifffile
 import glob
 import re
-# --- CONFIGURATION ---
+
 INPUT_ROOT = "/mnt/c/Users/Bhavya Jain/Downloads/H&E"
 OUTPUT_DIR = "./processed_dataset"
 BF_TOOLS_DIR = os.path.expanduser("~/EHRC/tools/bftools") 
@@ -25,7 +25,7 @@ def get_large_series_list(file_path):
     current_series = "0"
     
     for line in result.stdout.splitlines():
-        # Detect Series Header
+        
         series_match = re.search(r"Series #(\d+)", line)
         if series_match:
             current_series = series_match.group(1)
@@ -35,14 +35,14 @@ def get_large_series_list(file_path):
             try:
                 width = int(line.split("=")[1].strip())
                 # THRESHOLD: Any image wider than 5,000 pixels is likely tissue
-                # (Thumbnails are usually < 2,000)
+                
                 if width > 5000:
                     print(f"    -> Found High-Res Series #{current_series} (Width: {width}px)")
                     valid_series.append(current_series)
             except:
                 pass
                 
-    return list(set(valid_series)) # Remove duplicates
+    return list(set(valid_series)) 
 
 
 def estimate_magnification(image, patch_size=1024):
@@ -78,8 +78,8 @@ def estimate_magnification(image, patch_size=1024):
         
     avg_diameter = np.median(nuclei_sizes)
     print(f"    [Auto-Detect] Avg Nucleus Size: {avg_diameter:.1f} pixels")
+
     
-    # The thresholds you asked about!
     if avg_diameter > 28:
         print("    -> Detected 40x. Will downsample.")
         return 40
@@ -90,7 +90,7 @@ def estimate_magnification(image, patch_size=1024):
         print("    -> Detected 10x (Low Res).")
         return 10
 
-# --- THE HEAVY LIFTING (From the new pipeline) ---
+
 def process_dataset():
     vsi_files = glob.glob(os.path.join(INPUT_ROOT, "**", "*.vsi"), recursive=True)
     print(f"Found {len(vsi_files)} slides.")
@@ -108,12 +108,10 @@ def process_dataset():
 
         # 2. PROCESS EACH SERIES SEPARATELY
         for series_idx in target_series_list:
-            # We add the series number to the name so they don't overwrite each other
-            # e.g., "0001_S9", "0001_S10"
+    
             slide_name = f"{slide_base_name}_S{series_idx}"
             temp_tif = f"./temp_{slide_name}.ome.tif"
             
-            # Skip if output folder already exists
             slide_out_dir = os.path.join(OUTPUT_DIR, slide_name)
             if os.path.exists(slide_out_dir) and len(os.listdir(slide_out_dir)) > 50:
                 print(f"    Skipping {slide_name} (Already done).")
@@ -121,7 +119,7 @@ def process_dataset():
 
             print(f"  === Processing Series {series_idx} as {slide_name} ===")
             
-            # CONVERT
+            
             if not os.path.exists(temp_tif):
                 print("    Converting...")
                 cmd = [BFCONVERT_PATH, "-overwrite", "-compression", "LZW", 
