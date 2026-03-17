@@ -1,0 +1,30 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual environment
+venv/
+env/
+.venv/
+
+# Dataset folders (VERY IMPORTANT)
+normalized_dataset/
+labelled_png/
+processed_dataset/
+
+# Model weights
+*.pth
+*.pt
+
+# Mac / system files
+.DS_Store
+
+# Jupyter (if used later)
+.ipynb_checkpoints/
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp

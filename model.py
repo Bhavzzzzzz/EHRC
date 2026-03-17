@@ -17,13 +17,17 @@ class MILModel(nn.Module):
 
         self.classifier = nn.Linear(512,3)
 
-    def forward(self, x):
+    def forward(self, x, return_attention=False):
         feats = self.encoder(x)  # (N,512)
 
-        A = self.attention(feats)
+        A = self.attention(feats)  # (N,1)
         A = torch.softmax(A, dim=0)
 
         M = torch.sum(A * feats, dim=0)
 
         out = self.classifier(M)
+
+        if return_attention:
+            return out, A
+
         return out
