@@ -15,6 +15,10 @@ PATCH_DIR = f"normalized_dataset/{SLIDE_NAME}"
 RAW_IMAGE = f"labelled_png/{SLIDE_NAME}.png"
 
 PATCH_SIZE = 224
+OUT_DIR = "heatmap_res"
+
+# Create output directory if it doesn't exist
+os.makedirs(OUT_DIR, exist_ok=True)
 
 # Load model
 model = MILModel().to(device)
@@ -52,7 +56,9 @@ orig = cv2.cvtColor(orig, cv2.COLOR_BGR2RGB)
 
 biomarkers = ["IDH1R132H", "ATRX", "P53"]
 
-plt.figure(figsize=(15,5))
+# Setup combined figure using object-oriented API
+fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+fig.suptitle(f"Biomarker-wise ROI Heatmaps ({SLIDE_NAME})")
 
 for i, (att, name) in enumerate(zip(attentions, biomarkers)):
 
@@ -80,11 +86,25 @@ for i, (att, name) in enumerate(zip(attentions, biomarkers)):
     overlay = (0.7 * orig + 0.6 * heatmap_color)
     overlay = np.clip(overlay, 0, 255).astype(np.uint8)
 
-    # Plot
-    plt.subplot(1,3,i+1)
-    plt.title(name)
-    plt.imshow(overlay)
-    plt.axis('off')
+    # 1. Plot on the combined subplot
+    axes[i].set_title(name)
+    axes[i].imshow(overlay)
+    axes[i].axis('off')
 
-plt.suptitle("Biomarker-wise ROI Heatmaps")
+    # 2. Create and save an INDIVIDUAL plot for this specific biomarker
+    ind_fig, ind_ax = plt.subplots(figsize=(8, 8))
+    ind_ax.set_title(f"{name} - {SLIDE_NAME}")
+    ind_ax.imshow(overlay)
+    ind_ax.axis('off')
+    
+    # Save the individual plot
+    ind_filepath = os.path.join(OUT_DIR, f"{SLIDE_NAME}_{name}_heatmap.png")
+    ind_fig.savefig(ind_filepath, bbox_inches='tight', dpi=300)
+    plt.close(ind_fig) # Close the individual figure to free up memory
+
+# Save the combined figure as well
+combined_filepath = os.path.join(OUT_DIR, f"{SLIDE_NAME}_combined_heatmaps.png")
+fig.savefig(combined_filepath, bbox_inches='tight', dpi=300)
+
+# Still show the combined plot in the UI/Notebook
 plt.show()

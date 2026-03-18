@@ -34,7 +34,7 @@ for epoch in range(EPOCHS):
 
     for patches, labels in train_loader:
         patches = patches.squeeze(0).to(device)
-        labels = labels.squeeze(0).to(device)   # 🔥 FIXED HERE
+        labels = labels.squeeze(0).to(device)   
 
         optimizer.zero_grad()
 
